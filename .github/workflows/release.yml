@@ -44,9 +44,11 @@ jobs:
         uses: valicm/appimage-bash@main
         with:
           version_url: ${{ steps.release.outputs.package_url }}
-          version_file: "Kiro/resources/app/package.json"
-          version_bash: "jq -r .version"
-          version_icon: "kiro.png"
+          version_file: "Kiro/resources/app/product.json"
+          version_bash: >-
+            jq -r --arg fallback "${{ steps.release.outputs.version }}"
+            '.version // $fallback'
+          version_icon: "code.png"
           version_check: "verify"
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}

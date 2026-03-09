@@ -46,7 +46,6 @@ jobs:
           version_url: ${{ steps.release.outputs.package_url }}
           version_bash: "jq -r .version"
           version_icon: "code.png"
-          version_check: "verify"
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: actions/upload-artifact@v4

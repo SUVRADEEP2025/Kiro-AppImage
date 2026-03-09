@@ -39,13 +39,46 @@ jobs:
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "package_url=$package_url" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare upstream package for AppImage build
+        id: prep
+        run: |
+          set -euo pipefail
+          # download upstream tarball and extract into repository path expected by the build action
+          tmp_tar="$(mktemp /tmp/kiro.XXXXXX.tar.gz)"
+          echo "Downloading upstream package from: ${{ steps.release.outputs.package_url }}"
+          curl -fL -o "$tmp_tar" "${{ steps.release.outputs.package_url }}"
+
+          # remove any existing Kiro dir and extract fresh contents
+          if [ -d "Kiro" ]; then
+            rm -rf "Kiro"
+          fi
+          mkdir -p "Kiro"
+          tar -xzf "$tmp_tar" -C "Kiro" --strip-components=1
+          rm -f "$tmp_tar"
+
+          # sanity checks: ensure product.json exists and the icon is present
+          if [ ! -f "Kiro/resources/app/product.json" ]; then
+            echo "Error: product.json not found at Kiro/resources/app/product.json" >&2
+            ls -la Kiro || true
+            exit 1
+          fi
+
+          if [ ! -f "Kiro/resources/app/resources/linux/code.png" ]; then
+            echo "Warning: expected icon not found at Kiro/resources/app/resources/linux/code.png" >&2
+          fi
+
+          # ensure binaries are executable and resources readable
+          chmod -R a+rX Kiro || true
       - name: Build
         id: build
         uses: valicm/appimage-bash@main
         with:
           version_url: ${{ steps.release.outputs.package_url }}
+          version_file: "Kiro/resources/app/product.json"
           version_bash: "jq -r .version"
           version_icon: "code.png"
+          version_check: "verify"
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: actions/upload-artifact@v4

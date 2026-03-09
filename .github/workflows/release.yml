@@ -44,7 +44,6 @@ jobs:
         uses: valicm/appimage-bash@main
         with:
           version_url: ${{ steps.release.outputs.package_url }}
-          version_file: "package.json"
           version_bash: "jq -r .version"
           version_icon: "code.png"
           version_check: "verify"

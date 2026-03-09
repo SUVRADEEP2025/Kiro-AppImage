@@ -2,35 +2,35 @@ name: Build AppImage
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 */12 * * *"
+    - cron: "5 */12 */4 * *"
   push:
     branches:
       - "main"
 
 jobs:
   version:
-    name: VSCode AppImage
+    name: Kiro AppImage
     runs-on: ubuntu-22.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: Install libfuse2
-        run: sudo apt-get install -y libfuse2 imagemagick   
+        run: sudo apt-get install -y libfuse2 imagemagick
       - name: Build
         id: build
         uses: valicm/appimage-bash@main
         with:
-          version_url: 'https://code.visualstudio.com/sha/download?build=stable\&os=linux-x64'
-          version_file: 'resources/app/package.json'
-          version_bash: 'jq -r  .version'
-          version_icon: 'code.png'
+          version_url: "https://prod.download.desktop.kiro.dev/releases/stable/linux-x64"
+          version_file: "/metadata-linux-x64-stable.json"
+          version_bash: "jq -r  .version"
+          version_icon: "code.png"
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_SHORT_NAME }}.AppImage
-          path: 'dist'
+          path: "dist"
       - name: Release
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: marvinpinto/action-automatic-releases@latest

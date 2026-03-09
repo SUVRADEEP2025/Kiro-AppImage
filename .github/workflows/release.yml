@@ -58,13 +58,13 @@ jobs:
           rm -f "$tmp_tar"
 
           # sanity checks: ensure product.json exists and the icon is present
-          if [ ! -f "Kiro/resources/app/product.json" ]; then
-            echo "Error: product.json not found at Kiro/resources/app/product.json" >&2
+          if [ ! -f "resources/app/product.json" ]; then
+            echo "Error: product.json not found at resources/app/product.json" >&2
             ls -la Kiro || true
             exit 1
           fi
 
-          if [ ! -f "Kiro/resources/app/resources/linux/code.png" ]; then
+          if [ ! -f "resources/app/resources/linux/code.png" ]; then
             echo "Warning: expected icon not found at Kiro/resources/app/resources/linux/code.png" >&2
           fi
 
@@ -75,7 +75,7 @@ jobs:
         uses: valicm/appimage-bash@main
         with:
           version_url: ${{ steps.release.outputs.package_url }}
-          version_file: "Kiro/resources/app/product.json"
+          version_file: "resources/app/product.json"
           version_bash: "jq -r .version"
           version_icon: "code.png"
           version_check: "verify"

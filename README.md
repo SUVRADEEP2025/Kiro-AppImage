@@ -1,21 +1,22 @@
-<h2 align="center">Visual Studio Code AppImage</h2>
+<h2 align="center">KIro  AppImage</h2>
 <p align="center">Unofficial / Community provided Visual Studio Code AppImage - stable release</p>
-
-[![VSCode AppImage release](https://github.com/valicm/VSCode-AppImage/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/valicm/VSCode-AppImage/actions/workflows/release.yml)
 
 ## Get Started
 
-#### [Download the latest stable release](https://github.com/valicm/VSCode-AppImage/releases/latest)
+#### [Download the latest stable release](https://github.com/pratyay360/Kiro-AppImage/releases/latest)
 - stable release only
 - supports update of the AppImage
 
 ### Executing
 #### File Manager
+
 Double-click the `*.AppImage` file and you are done!
 
 > In normal cases, the above method should work, but in some cases you 
 > need mark file as executable. You can do this using File manager -> right click > Properties > Allow Execution,
 > or by terminal issuing command `chmod +x VSCode-*.AppImage`
+
+##  better use gear leaver
 
 #### AppImageLauncher
 Use AppImageLauncher for better desktop integration ==> [download AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)

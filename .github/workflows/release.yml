@@ -23,7 +23,7 @@ jobs:
       - name: Resolve latest Kiro release
         id: release
         run: |
-          metadata="$(curl -fsSL ${{ env.METADATA_URL }}"
+          metadata="$(curl -fsSL ${{ env.METADATA_URL }} )"
           version="$(jq -r '.currentRelease' <<<"$metadata")"
           package_url="$(jq -r '.releases[].updateTo.url | select(endswith(".tar.gz"))' <<<"$metadata" | head -n 1)"
 

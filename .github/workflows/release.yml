@@ -15,7 +15,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       METADATA_URL: https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@main
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -36,7 +36,6 @@ jobs:
             echo "Unable to determine package tarball URL from metadata" >&2
             exit 1
           fi
-
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "package_url=$package_url" >> "$GITHUB_OUTPUT"
 

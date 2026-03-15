@@ -50,7 +50,7 @@ jobs:
           version_icon: 'code.png'
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: ${{ env.APP_SHORT_NAME }}.AppImage
           path: 'dist'

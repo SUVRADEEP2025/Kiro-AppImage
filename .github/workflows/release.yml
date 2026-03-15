@@ -23,21 +23,21 @@ jobs:
       - name: Resolve latest Kiro release
         id: release
         run: |
-          metadata="$(curl -fsSL "$METADATA_URL")"
+          metadata="$(curl -fsSL ${{ env.METADATA_URL }}"
           version="$(jq -r '.currentRelease' <<<"$metadata")"
           package_url="$(jq -r '.releases[].updateTo.url | select(endswith(".tar.gz"))' <<<"$metadata" | head -n 1)"
 
           if [[ -z "$version" || "$version" == "null" ]]; then
-            echo "Unable to determine currentRelease from metadata" >&2
+            echo "Unable to determine currentRelease from metadata" >> {{  env.GITHUB_OUTPUT }}
             exit 1
           fi
 
           if [[ -z "$package_url" || "$package_url" == "null" ]]; then
-            echo "Unable to determine package tarball URL from metadata" >&2
+            echo "Unable to determine package tarball URL from metadata" >> {{ env.GITHUB_OUTPUT }}
             exit 1
           fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "package_url=$package_url" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> {{ env.GITHUB_OUTPUT }} 
+          echo "package_url=$package_url" >> {{ env.GITHUB_OUTPUT }}
 
       - name: Build
         id: build

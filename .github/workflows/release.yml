@@ -1,4 +1,73 @@
+# name: Build AppImage
+# on:
+#   workflow_dispatch:
+#   schedule:
+#     - cron: "5 */12 * * *"
+#   push:
+#     branches:
+#       - "main"
+
+# jobs:
+#   version:
+#     name: Kiro AppImage
+#     runs-on: ubuntu-22.04
+#     env:
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       METADATA_URL: https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json
+#     steps:
+#       - uses: actions/checkout@main
+#       - name: Install build dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y jq libfuse2 imagemagick
+#       - name: Resolve latest Kiro release
+#         id: release
+#         run: |
+#           metadata="$(curl -fsSL ${{ env.METADATA_URL }} )"
+#           version="$(jq -r '.currentRelease' <<<"$metadata")"
+#           package_url="$(jq -r '.releases[].updateTo.url | select(endswith(".tar.gz"))' <<<"$metadata" | head -n 1)"
+
+#           if [[ -z "$version" || "$version" == "null" ]]; then
+#             echo "Unable to determine currentRelease from metadata" >> {{  env.GITHUB_OUTPUT }}
+#             exit 1
+#           fi
+
+#           if [[ -z "$package_url" || "$package_url" == "null" ]]; then
+#             echo "Unable to determine package tarball URL from metadata" >> {{ env.GITHUB_OUTPUT }}
+#             exit 1
+#           fi
+#           echo "version=$version" >> {{ env.GITHUB_OUTPUT }} 
+#           echo "package_url=$package_url" >> {{ env.GITHUB_OUTPUT }}
+
+#       - name: Build
+#         id: build
+#         uses: valicm/appimage-bash@main
+#         with:
+#           version_url: ${{ steps.release.outputs.package_url }}
+#           version_file: 'resources/app/package.json'
+#           version_bash: 'jq -r  .version'
+#           version_icon: 'code.png'
+#       - name: Upload artifact
+#         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
+#         uses: actions/upload-artifact@main
+#         with:
+#           name: ${{ env.APP_SHORT_NAME }}.AppImage
+#           path: 'dist'
+#       - name: Release
+#         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
+#         uses: marvinpinto/action-automatic-releases@latest
+#         with:
+#           title: ${{ env.APP_NAME }} AppImage ${{ env.APP_VERSION }}
+#           automatic_release_tag: ${{ env.APP_VERSION }}
+#           prerelease: false
+#           files: |
+#             dist/
+#           repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+
 name: Build AppImage
+
 on:
   workflow_dispatch:
   schedule:
@@ -7,52 +76,65 @@ on:
     branches:
       - "main"
 
+env:
+  APP_NAME: Kiro
+  APP_SHORT_NAME: kiro
+  METADATA_URL: https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json
+  DIST_DIR: dist
+  VERSION_FILE: resources/app/package.json
+  VERSION_ICON: code.png
+  VERSION_BASH: jq -r .version
+
 jobs:
   version:
     name: Kiro AppImage
     runs-on: ubuntu-22.04
+
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      METADATA_URL: https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json
+
     steps:
-      - uses: actions/checkout@main
+      - name: Checkout
+        uses: actions/checkout@main
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq libfuse2 imagemagick
+
       - name: Resolve latest Kiro release
         id: release
         run: |
-          metadata="$(curl -fsSL ${{ env.METADATA_URL }} )"
+          metadata="$(curl -fsSL "$METADATA_URL")"
           version="$(jq -r '.currentRelease' <<<"$metadata")"
           package_url="$(jq -r '.releases[].updateTo.url | select(endswith(".tar.gz"))' <<<"$metadata" | head -n 1)"
-
           if [[ -z "$version" || "$version" == "null" ]]; then
-            echo "Unable to determine currentRelease from metadata" >> {{  env.GITHUB_OUTPUT }}
+            echo "Unable to determine currentRelease from metadata" >&2
             exit 1
           fi
-
           if [[ -z "$package_url" || "$package_url" == "null" ]]; then
-            echo "Unable to determine package tarball URL from metadata" >> {{ env.GITHUB_OUTPUT }}
+            echo "Unable to determine package tarball URL from metadata" >&2
             exit 1
           fi
-          echo "version=$version" >> {{ env.GITHUB_OUTPUT }} 
-          echo "package_url=$package_url" >> {{ env.GITHUB_OUTPUT }}
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "package_url=$package_url" >> "$GITHUB_OUTPUT"
 
-      - name: Build
+      - name: Build AppImage
         id: build
         uses: valicm/appimage-bash@main
         with:
           version_url: ${{ steps.release.outputs.package_url }}
-          version_file: 'resources/app/package.json'
-          version_bash: 'jq -r  .version'
-          version_icon: 'code.png'
+          version_file: ${{ env.VERSION_FILE }}
+          version_bash: ${{ env.VERSION_BASH }}
+          version_icon: ${{ env.VERSION_ICON }}
+
       - name: Upload artifact
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.APP_SHORT_NAME }}.AppImage
-          path: 'dist'
+          path: ${{ env.DIST_DIR }}
+
       - name: Release
         if: ${{ env.APP_UPDATE_NEEDED == 'true' }}
         uses: marvinpinto/action-automatic-releases@latest
@@ -61,5 +143,5 @@ jobs:
           automatic_release_tag: ${{ env.APP_VERSION }}
           prerelease: false
           files: |
-            dist/
+            ${{ env.DIST_DIR }}/
           repo_token: ${{ secrets.GITHUB_TOKEN }}
